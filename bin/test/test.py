@@ -36,6 +36,21 @@ def test_consume_change():
     log.info(ret)
 
 
+def test_consume_times_stat():
+    url = '/internal/v1/api/consumer_times_stat'
+    SERVER   = [{'addr':('127.0.0.1', 8087), 'timeout':2000},]
+    client = HttpClient(SERVER, client_class = RequestsClient)
+    get_data  = {
+        # 'userid': 1199,
+        # 'userid': 1196,
+        'userid': 1267,
+    }
+    ret = client.get(url, get_data)
+    log.info(ret)
+
+
+
 if __name__ == '__main__':
     # test_register()
-    test_consume_change()
+    # test_consume_change()
+    test_consume_times_stat()

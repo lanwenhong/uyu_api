@@ -9,6 +9,7 @@ from zbase.web.validator import T_INT, T_STR, T_FLOAT
 from zbase.base.dbpool import with_database
 from uyubase.base.response import success, error, UAURET
 from uyubase.base.uyu_user import UUser
+from uyubase.uyu import define
 from uyubase.uyu.define import UYU_OP_OK, UYU_OP_ERR
 from uyubase.base.training_op import ConsumerTimesChange
 log = logging.getLogger()
@@ -81,3 +82,58 @@ class ConsumerTimesHandler(core.Handler):
     def POST(self, *args):
         ret = self._post_handler()
         self.write(ret)
+
+
+class ConsumerTimesStat(core.Handler):
+
+    _get_handler_fields = [
+        Field('userid', T_INT, False)
+    ]
+
+    @with_validator_self
+    def _get_handler(self):
+        try:
+            params = self.validator.data
+            consumer_id = params['userid']
+            #是不是消费者
+            check = self._check_consumer(consumer_id)
+            if not check:
+                return error(UAURET.ROLEERR)
+            #获取次数
+            ret = self._query_handler(consumer_id)
+            remain_times = ret.get('remain_times') if ret and ret['remain_times'] else 0
+            data = {'remain_times': remain_times}
+            return success(data)
+        except Exception as e:
+            log.warn(e)
+            log.warn(traceback.format_exc())
+            return error(UAURET.DATAERR)
+
+
+    @with_database('uyu_core')
+    def _query_handler(self, consumer_id):
+        keep_fields = [
+            'sum(remain_times) as remain_times'
+        ]
+        where = {'userid': consumer_id}
+        ret = self.db.select_one(
+            table='consumer', fields=keep_fields, where=where
+        )
+        return ret
+
+    @with_database('uyu_core')
+    def _check_consumer(self, consumer_id):
+        keep_fields = ['*']
+        where = {'id': consumer_id, 'user_type': define.UYU_USER_ROLE_COMSUMER}
+        ret = self.db.select_one(table='auth_user', fields=keep_fields, where=where)
+        return ret
+
+
+    def GET(self):
+        try:
+            data = self._get_handler()
+            return data
+        except Exception as e:
+            log.warn(e)
+            log.warn(traceback.format_exc())
+            return error(UAURET.SERVERERR)
