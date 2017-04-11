@@ -30,7 +30,6 @@ class RegisterHandler(core.Handler):
     def _post_handler_errfunc(self, msg):
         return error(UAURET.PARAMERR, respmsg=msg)
 
-
     @with_validator_self
     def _post_handler(self):
         try:
@@ -55,7 +54,7 @@ class RegisterHandler(core.Handler):
 class ConsumerTimesHandler(core.Handler):
     _post_handler_fields = [
         Field('userid', T_INT, False, match=r'^([0-9]{0,10})$'),
-        Field('store_id', T_INT, False, match=r'^([0-9]{0,10})$'),
+        Field('store_userid', T_INT, False, match=r'^([0-9]{0,10})$'),
         Field('training_times', T_INT, False),
         Field('eyesight_id', T_INT, True, match=r'^([0-9]{0,10})$'),
         Field('device_id', T_INT, True, match=r'^([0-9]{0,10})$'),
@@ -64,10 +63,44 @@ class ConsumerTimesHandler(core.Handler):
     def _post_handler_errfunc(self, msg):
         return error(UAURET.PARAMERR, respmsg=msg)
 
+    @with_database('uyu_core')
+    def _trans_store_info(self, store_userid):
+        # 是不是门店且状态正常
+        ret = self.db.select_one(
+            table='auth_user',
+            fields='*',
+            where={
+                'id': store_userid,
+                'user_type': define.UYU_USER_ROLE_STORE,
+            }
+        )
+
+        if not ret:
+            return False, UAURET.ROLEERR, None
+
+        state = ret.get('state')
+        if state == define.UYU_USER_STATE_OK:
+            dbret = self.db.select_one(table='stores', fields='*', where={'userid': store_userid})
+            if dbret and dbret['is_valid'] == define.UYU_STORE_STATUS_OPEN:
+                return True, UAURET.OK, dbret['id']
+            else:
+                log.debug('find stores info error store_userid=%s', store_userid)
+                return False, UAURET.USERERR, None
+        else:
+            return False, UAURET.USERERR, None
+
+
     @with_validator_self
     def _post_handler(self):
         try:
             params = self.validator.data
+
+            store_userid = params.pop('store_userid')
+            check, code, store_id = self._trans_store_info(store_userid)
+            if not check:
+                return error(code)
+            params['store_id'] = store_id
+
             cc = ConsumerTimesChange()
             ret = cc.do_sub_times(params)
             if ret == UYU_OP_ERR:

@@ -28,8 +28,8 @@ def test_consume_change():
     SERVER   = [{'addr':('127.0.0.1', 8087), 'timeout':2000},]
     client = HttpClient(SERVER, client_class = RequestsClient)
     post_data  = {
-        'userid': 1120,
-        'store_id': 54,
+        'userid': 1199,
+        'store_userid': 1197,
         'training_times': 1
     }
     ret = client.post(url, post_data)
@@ -52,5 +52,5 @@ def test_consume_times_stat():
 
 if __name__ == '__main__':
     # test_register()
-    # test_consume_change()
-    test_consume_times_stat()
+    test_consume_change()
+    # test_consume_times_stat()
