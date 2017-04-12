@@ -134,7 +134,7 @@ class ConsumerTimesStat(core.Handler):
                 return error(UAURET.ROLEERR)
             #获取次数
             ret = self._query_handler(consumer_id)
-            remain_times = ret.get('remain_times') if ret and ret['remain_times'] else 0
+            remain_times = int(ret.get('remain_times')) if ret and ret['remain_times'] else 0
             data = {'remain_times': remain_times}
             return success(data)
         except Exception as e:
