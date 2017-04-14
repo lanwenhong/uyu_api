@@ -123,6 +123,9 @@ class ConsumerTimesStat(core.Handler):
         Field('userid', T_INT, False)
     ]
 
+    def _get_handler_errfunc(self, msg):
+        return error(UAURET.PARAMERR, respmsg=msg)
+
     @with_validator_self
     def _get_handler(self):
         try:
