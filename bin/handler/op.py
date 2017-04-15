@@ -25,7 +25,8 @@ class RegisterHandler(core.Handler):
         Field('password', T_STR, False),
         Field('user_type', T_INT, False, match=r'^([1-7]{1})$'),
         Field('email', T_STR, True, match=r'^[a-zA-Z0-9_\-\'\.]+@[a-zA-Z0-9_]+(\.[a-z]+){1,2}$'),
-        Field('sex', T_INT, True, match=r'^([0-1]{1})$')
+        Field('sex', T_INT, True, match=r'^([0-1]{1})$'),
+        Field('store_userid', T_INT, True)
     ]
 
     def _post_handler_errfunc(self, msg):
@@ -34,9 +35,18 @@ class RegisterHandler(core.Handler):
     @with_validator_self
     def _post_handler(self):
         try:
-            params = self.validator.data
             uop = UUser()
-            flag, userid = uop.internal_user_register(params)
+            params = self.validator.data
+            store_userid = params.pop('store_userid')
+            user_type = params['user_type']
+            if store_userid and user_type == define.UYU_USER_ROLE_COMSUMER:
+                check, code, store_id = self._trans_store_info(store_userid)
+                if not check:
+                    return error(code)
+                flag, userid = uop.internal_user_register_with_consumer(params, store_id)
+            else:
+                flag, userid = uop.internal_user_register(params)
+
             if flag:
                 return success({'userid': userid})
             else:
@@ -45,6 +55,35 @@ class RegisterHandler(core.Handler):
             log.warn(e)
             log.warn(traceback.format_exc())
             return error(UAURET.REQERR)
+
+    @with_database('uyu_core')
+    def _trans_store_info(self, store_userid):
+        # 是不是门店且状态正常
+        ret = self.db.select_one(
+            table='auth_user',
+            fields='*',
+            where={
+                'id': store_userid,
+                'user_type': define.UYU_USER_ROLE_STORE,
+            }
+        )
+
+        if not ret:
+            log.debug('store_userid error or role error')
+            return False, UAURET.ROLEERR, None
+
+        state = ret.get('state')
+        if state == define.UYU_USER_STATE_OK:
+            dbret = self.db.select_one(table='stores', fields='*', where={'userid': store_userid})
+            if dbret and dbret['is_valid'] == define.UYU_STORE_STATUS_OPEN:
+                return True, UAURET.OK, dbret['id']
+            else:
+                log.debug('find stores info error store_userid=%s', store_userid)
+                return False, UAURET.USERERR, None
+        else:
+            log.debug('find stores info state error store_userid=%s', store_userid)
+            return False, UAURET.USERERR, None
+
 
     def POST(self, *args):
         ret = self._post_handler()
