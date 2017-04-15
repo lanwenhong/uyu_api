@@ -38,13 +38,13 @@ class TestUyuInternalApi(unittest.TestCase):
         self.assertEqual(respcd, '0000')
 
 
-    @unittest.skip("skipping")
+    #@unittest.skip("skipping")
     def test_consume_change(self):
         self.url = '/internal/v1/api/consumer_change'
         self.send  = {
             'userid': 1199,
             'store_userid': 1197,
-            'training_times': 250
+            'training_times': 1
         }
         ret = self.client.post(self.url, self.send)
         log.info(ret)
@@ -52,7 +52,7 @@ class TestUyuInternalApi(unittest.TestCase):
         self.assertEqual(respcd, '0000')
 
 
-    #@unittest.skip("skipping")
+    @unittest.skip("skipping")
     def test_consume_times_stat(self):
         self.url = '/internal/v1/api/consumer_times_stat'
         self.send  = {
