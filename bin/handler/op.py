@@ -18,7 +18,8 @@ log = logging.getLogger()
 class RegisterHandler(core.Handler):
 
     _post_handler_fields = [
-        Field('mobile', T_REG, False, match=r'^(1\d{10})$'),
+        # Field('mobile', T_REG, False, match=r'^(1\d{10})$'),
+        Field('mobile', T_REG, False, match=r'^([0-9]{11})$'),
         Field('nick_name', T_STR, True),
         Field('username', T_STR, True),
         Field('password', T_STR, False),
