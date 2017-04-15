@@ -226,7 +226,7 @@ class DeviceInfoHandler(core.Handler):
 
     _get_handler_fields = [
         Field('device_id', T_INT, True),
-        Field('scm_tag', T_STR, True)
+        Field('blooth_tag', T_STR, True)
     ]
 
     def _get_handler_errfunc(self, msg):
@@ -237,11 +237,11 @@ class DeviceInfoHandler(core.Handler):
         try:
             params = self.validator.data
             device_id = params['device_id']
-            scm_tag = params['scm_tag']
-            if device_id == '' and scm_tag == '':
-                log.debug('device_id and scm_tag all null')
+            blooth_tag = params['blooth_tag']
+            if device_id == '' and blooth_tag == '':
+                log.debug('device_id and blooth_tag all null')
                 return error(UAURET.DATAERR)
-            ret = self._query_handler(device_id, scm_tag)
+            ret = self._query_handler(device_id, blooth_tag)
             if not ret:
                 log.debug('device_id error=%s', device_id)
                 return error(UAURET.DATAERR)
@@ -253,12 +253,12 @@ class DeviceInfoHandler(core.Handler):
             return error(UAURET.DATAERR)
 
     @with_database('uyu_core')
-    def _query_handler(self, device_id, scm_tag):
+    def _query_handler(self, device_id, blooth_tag):
         keep_fields = '*'
         if device_id:
             ret = self.db.select_one(table='device', fields=keep_fields, where={'id': device_id})
-        elif scm_tag:
-            ret = self.db.select_one(table='device', fields=keep_fields, where={'scm_tag': scm_tag})
+        elif blooth_tag:
+            ret = self.db.select_one(table='device', fields=keep_fields, where={'blooth_tag': blooth_tag})
         return ret
 
 
