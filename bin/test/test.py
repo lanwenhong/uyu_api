@@ -39,7 +39,7 @@ class TestUyuInternalApi(unittest.TestCase):
         self.assertEqual(respcd, '0000')
 
 
-    #@unittest.skip("skipping")
+    @unittest.skip("skipping")
     def test_consume_change(self):
         self.url = '/internal/v1/api/consumer_change'
         self.send  = {
@@ -64,6 +64,17 @@ class TestUyuInternalApi(unittest.TestCase):
         respcd = json.loads(ret).get('respcd')
         self.assertEqual(respcd, '0000')
 
+
+    #@unittest.skip("skipping")
+    def test_device_info(self):
+        self.url = '/v1/device/info'
+        self.send  = {
+            'device_id': 111,
+        }
+        ret = self.client.get(self.url, self.send)
+        log.info(ret)
+        respcd = json.loads(ret).get('respcd')
+        self.assertEqual(respcd, '0000')
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestUyuInternalApi)
 unittest.TextTestRunner(verbosity=2).run(suite)

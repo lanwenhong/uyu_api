@@ -213,3 +213,67 @@ class ConsumerTimesStat(core.Handler):
             log.warn(e)
             log.warn(traceback.format_exc())
             return error(UAURET.SERVERERR)
+
+
+
+class DeviceInfoHandler(core.Handler):
+
+    _get_handler_fields = [
+        Field('device_id', T_INT, False)
+    ]
+
+    def _get_handler_errfunc(self, msg):
+        return error(UAURET.PARAMERR, respmsg=msg)
+
+    @with_validator_self
+    def _get_handler(self):
+        try:
+            params = self.validator.data
+            device_id = params['device_id']
+            ret = self._query_handler(device_id)
+            if not ret:
+                log.debug('device_id error=%s', device_id)
+                return error(UAURET.DATAERR)
+            data = self._trans_record(ret)
+            return success(data)
+        except Exception as e:
+            log.warn(e)
+            log.warn(traceback.format_exc())
+            return error(UAURET.DATAERR)
+
+    @with_database('uyu_core')
+    def _query_handler(self, device_id):
+        keep_fields = '*'
+        ret = self.db.select_one(table='device', fields=keep_fields, where={'id': device_id})
+        return ret
+
+
+    @with_database('uyu_core')
+    def _trans_record(self, data):
+        log.debug('device origin info data=%s', data)
+        channel_id = data.pop('channel_id')
+        store_id = data.pop('store_id')
+        if channel_id:
+            ret = self.db.select_one(table='channel', fields='*', where={'id': channel_id})
+            data['channel_id'] = ret.get('userid')
+        else:
+            data['channel_id'] = 0
+
+        if store_id:
+            ret = self.db.select_one(table='stores', fields='*', where={'id': store_id})
+            data['store_id'] = ret.get('userid')
+        else:
+            data['store_id'] = 0
+
+        return data
+
+
+    def GET(self):
+        try:
+            data = self._get_handler()
+            log.debug('ret data=%s', data)
+            return data
+        except Exception as e:
+            log.warn(e)
+            log.warn(traceback.format_exc())
+            return error(UAURET.SERVERERR)

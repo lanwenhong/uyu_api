@@ -9,4 +9,6 @@ urls = (
     ('^/internal/v1/api/consumer_change$', op.ConsumerTimesHandler),
     # 统计消费者所有门店总的剩余次数
     ('^/internal/v1/api/consumer_times_stat$', op.ConsumerTimesStat),
+    # 设备信息
+    ('^/v1/device/info$', op.DeviceInfoHandler),
 )
