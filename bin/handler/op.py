@@ -134,7 +134,7 @@ class ConsumerTimesHandler(core.Handler):
     def _post_handler(self):
         try:
             params = self.validator.data
-
+            userid = params.get('userid')
             store_userid = params.pop('store_userid')
             check, code, store_id = self._trans_store_info(store_userid)
             if not check:
@@ -145,11 +145,17 @@ class ConsumerTimesHandler(core.Handler):
             ret = cc.do_sub_times(params)
             if ret == UYU_OP_ERR:
                 return error(UAURET.ORDERERR)
-            return success({})
+            ret = self._get_remain_times(userid, store_id)
+            return success(ret)
         except Exception as e:
             log.warn(e)
             log.warn(traceback.format_exc())
             return error(UAURET.REQERR)
+
+    @with_database('uyu_core')
+    def _get_remain_times(self, userid, store_id):
+        ret = self.db.select_one(table='consumer', fields='remain_times', where={'userid': userid, 'store_id': store_id})
+        return ret
 
 
     def POST(self, *args):
@@ -219,7 +225,8 @@ class ConsumerTimesStat(core.Handler):
 class DeviceInfoHandler(core.Handler):
 
     _get_handler_fields = [
-        Field('device_id', T_INT, False)
+        Field('device_id', T_INT, True),
+        Field('scm_tag', T_STR, True)
     ]
 
     def _get_handler_errfunc(self, msg):
@@ -230,7 +237,11 @@ class DeviceInfoHandler(core.Handler):
         try:
             params = self.validator.data
             device_id = params['device_id']
-            ret = self._query_handler(device_id)
+            scm_tag = params['scm_tag']
+            if device_id == '' and scm_tag == '':
+                log.debug('device_id and scm_tag all null')
+                return error(UAURET.DATAERR)
+            ret = self._query_handler(device_id, scm_tag)
             if not ret:
                 log.debug('device_id error=%s', device_id)
                 return error(UAURET.DATAERR)
@@ -242,9 +253,12 @@ class DeviceInfoHandler(core.Handler):
             return error(UAURET.DATAERR)
 
     @with_database('uyu_core')
-    def _query_handler(self, device_id):
+    def _query_handler(self, device_id, scm_tag):
         keep_fields = '*'
-        ret = self.db.select_one(table='device', fields=keep_fields, where={'id': device_id})
+        if device_id:
+            ret = self.db.select_one(table='device', fields=keep_fields, where={'id': device_id})
+        elif scm_tag:
+            ret = self.db.select_one(table='device', fields=keep_fields, where={'scm_tag': scm_tag})
         return ret
 
 
@@ -277,3 +291,65 @@ class DeviceInfoHandler(core.Handler):
             log.warn(e)
             log.warn(traceback.format_exc())
             return error(UAURET.SERVERERR)
+
+
+class MerchantDeviceInfoHandler(core.Handler):
+
+    _get_handler_fields = [
+        Field('store_userid', T_INT, False),
+        Field('channel_userid', T_INT, True)
+    ]
+
+
+    @with_validator_self
+    def _get_handler(self):
+        try:
+            params = self.validator.data
+            store_userid = params['store_userid']
+            channel_userid = params['channel_userid']
+            store_id = self._query_store_id(store_userid)
+            if channel_userid not in ['', None]:
+                channel_id = self._query_channel_id(channel_userid)
+            else:
+                channel_id = None
+
+            ret = self._query_handler(store_id, channel_id)
+            if not ret:
+                log.debug('device_id error=%s', device_id)
+                return success([])
+            return success(ret)
+        except Exception as e:
+            log.warn(e)
+            log.warn(traceback.format_exc())
+            return error(UAURET.DATAERR)
+
+    @with_database('uyu_core')
+    def _query_store_id(self, store_userid):
+        ret = self.db.select_one(table='stores', fields='*', where={'userid': store_userid})
+        return ret['id'] if ret else 0
+
+    @with_database('uyu_core')
+    def _query_channel_id(self, channel_userid):
+        ret = self.db.select_one(table='channel', fields='*', where={'userid': channel_userid})
+        return ret['id'] if ret else 0
+
+    @with_database('uyu_core')
+    def _query_handler(self, store_id, channel_id=None):
+        keep_fields = ['id', 'device_name', 'hd_version', 'blooth_tag', 'scm_tag', 'status']
+        where = {'store_id': store_id}
+        if channel_id:
+            where.update({'channel_id': channel_id})
+        ret = self.db.select(table='device', fields=keep_fields, where=where)
+        return ret
+
+
+    def GET(self):
+        try:
+            data = self._get_handler()
+            log.debug('ret data=%s', data)
+            return data
+        except Exception as e:
+            log.warn(e)
+            log.warn(traceback.format_exc())
+            return error(UAURET.SERVERERR)
+

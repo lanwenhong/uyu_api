@@ -11,4 +11,6 @@ urls = (
     ('^/internal/v1/api/consumer_times_stat$', op.ConsumerTimesStat),
     # 设备信息
     ('^/v1/device/info$', op.DeviceInfoHandler),
+    # 商户对应的设备
+    ('^/v1/merchant/device_info$', op.MerchantDeviceInfoHandler),
 )
