@@ -58,13 +58,13 @@ class RegisterHandler(core.Handler):
 
     @with_database('uyu_core')
     def _trans_store_info(self, store_userid):
-        # 是不是门店且状态正常
+        # 是不是门店或者医院且状态正常
         ret = self.db.select_one(
             table='auth_user',
             fields='*',
             where={
                 'id': store_userid,
-                'user_type': define.UYU_USER_ROLE_STORE,
+                'user_type': ('in', (define.UYU_USER_ROLE_STORE, define.UYU_USER_ROLE_HOSPITAL)),
             }
         )
 
@@ -105,13 +105,14 @@ class ConsumerTimesHandler(core.Handler):
 
     @with_database('uyu_core')
     def _trans_store_info(self, store_userid):
-        # 是不是门店且状态正常
+        # 是不是门店或者医院且状态正常
         ret = self.db.select_one(
             table='auth_user',
             fields='*',
             where={
                 'id': store_userid,
-                'user_type': define.UYU_USER_ROLE_STORE,
+                # 'user_type': define.UYU_USER_ROLE_STORE,
+                'user_type': ('in', (define.UYU_USER_ROLE_STORE, define.UYU_USER_ROLE_HOSPITAL)),
             }
         )
 
@@ -243,7 +244,7 @@ class DeviceInfoHandler(core.Handler):
                 return error(UAURET.DATAERR)
             ret = self._query_handler(device_id, blooth_tag)
             if not ret:
-                log.debug('device_id error=%s', device_id)
+                log.debug('device_id or blooth_tag error device_id=%s, blooth_tag=%s', device_id, blooth_tag)
                 return error(UAURET.DATAERR)
             data = self._trans_record(ret)
             return success(data)
@@ -315,7 +316,7 @@ class MerchantDeviceInfoHandler(core.Handler):
 
             ret = self._query_handler(store_id, channel_id)
             if not ret:
-                log.debug('device_id error=%s', device_id)
+                log.debug('store_id or channel_id error store_id=%s, channel_id=%s', store_id, channel_id)
                 return success([])
             return success(ret)
         except Exception as e:
