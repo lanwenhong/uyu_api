@@ -354,3 +354,45 @@ class MerchantDeviceInfoHandler(core.Handler):
             log.warn(traceback.format_exc())
             return error(UAURET.SERVERERR)
 
+
+class ConsumerListHandler(core.Handler):
+
+    _get_handler_fields = []
+
+    @with_validator_self
+    def _get_handler(self):
+        try:
+            ret = self._query_handler()
+            data = self._trans_record(ret)
+            return success(data)
+        except Exception as e:
+            log.warn(e)
+            log.warn(traceback.format_exc())
+            return error(UAURET.DATAERR)
+
+
+    @with_database('uyu_core')
+    def _query_handler(self):
+        ret = self.db.select(table='consumer', fields='userid')
+        return ret
+
+    def _trans_record(self, data):
+        result = []
+        if not data:
+            return []
+
+        for item in data:
+            result.append(item['userid'])
+
+        return list(set(result))
+
+
+    def GET(self):
+        try:
+            data = self._get_handler()
+            log.debug('ret data=%s', data)
+            return data
+        except Exception as e:
+            log.warn(e)
+            log.warn(traceback.format_exc())
+            return error(UAURET.SERVERERR)

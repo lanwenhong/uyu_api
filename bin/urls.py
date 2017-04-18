@@ -13,4 +13,6 @@ urls = (
     ('^/v1/device/info$', op.DeviceInfoHandler),
     # 商户对应的设备
     ('^/v1/merchant/device_info$', op.MerchantDeviceInfoHandler),
+    # 消费者数据
+    ('^/v1/consumer/list$', op.ConsumerListHandler),
 )

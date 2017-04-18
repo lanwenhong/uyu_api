@@ -21,16 +21,16 @@ class TestUyuInternalApi(unittest.TestCase):
         self.client = HttpClient(self.server, client_class = RequestsClient)
 
 
-    @unittest.skip("skipping")
+    #@unittest.skip("skipping")
     def test_register(self):
         self.url = '/internal/v1/api/register'
         self.send = {
-            'mobile': '13802438742',
+            'mobile': '13802438755',
             'password': '123456',
             'user_type': 7,
-            'nick_name': 'dd',
-            'username': 'dd',
-            'email': '13802438742@cc.com',
+            'nick_name': 'ccd',
+            'username': 'ccd',
+            'email': '13802438755@cc.com',
             'store_userid': 51568
         }
         ret = self.client.post(self.url, self.send)
@@ -39,7 +39,7 @@ class TestUyuInternalApi(unittest.TestCase):
         self.assertEqual(respcd, '0000')
 
 
-    #@unittest.skip("skipping")
+    @unittest.skip("skipping")
     def test_consume_change(self):
         self.url = '/internal/v1/api/consumer_change'
         self.send  = {
@@ -88,6 +88,17 @@ class TestUyuInternalApi(unittest.TestCase):
         log.info(ret)
         respcd = json.loads(ret).get('respcd')
         self.assertEqual(respcd, '0000')
+
+
+    @unittest.skip("skipping")
+    def test_consumer_list(self):
+        self.url = '/v1/consumer/list'
+        self.send  = {}
+        ret = self.client.get(self.url, self.send)
+        log.info(ret)
+        respcd = json.loads(ret).get('respcd')
+        self.assertEqual(respcd, '0000')
+
 
 suite = unittest.TestLoader().loadTestsFromTestCase(TestUyuInternalApi)
 unittest.TextTestRunner(verbosity=2).run(suite)
