@@ -39,10 +39,13 @@ class RegisterHandler(core.Handler):
             params = self.validator.data
             store_userid = params.pop('store_userid')
             user_type = params['user_type']
-            if store_userid and user_type == define.UYU_USER_ROLE_COMSUMER:
-                check, code, store_id = self._trans_store_info(store_userid)
-                if not check:
-                    return error(code)
+            if user_type == define.UYU_USER_ROLE_COMSUMER:
+                if store_userid != '':
+                    check, code, store_id = self._trans_store_info(store_userid)
+                    if not check:
+                        return error(code)
+                else:
+                    store_id = 0
                 flag, userid = uop.internal_user_register_with_consumer(params, store_id)
             else:
                 flag, userid = uop.internal_user_register(params)
