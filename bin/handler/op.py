@@ -181,7 +181,7 @@ class ConsumerTimesStat(core.Handler):
         try:
             params = self.validator.data
             consumer_id = params['userid']
-            #是不是消费者
+            #是不是消费者或者视光师
             check = self._check_consumer(consumer_id)
             if not check:
                 return error(UAURET.ROLEERR)
@@ -210,7 +210,7 @@ class ConsumerTimesStat(core.Handler):
     @with_database('uyu_core')
     def _check_consumer(self, consumer_id):
         keep_fields = ['*']
-        where = {'id': consumer_id, 'user_type': define.UYU_USER_ROLE_COMSUMER}
+        where = {'id': consumer_id, 'user_type': ('in', (define.UYU_USER_ROLE_COMSUMER, define.UYU_USER_ROLE_EYESIGHT))}
         ret = self.db.select_one(table='auth_user', fields=keep_fields, where=where)
         return ret
 
