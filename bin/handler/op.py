@@ -89,6 +89,7 @@ class RegisterHandler(core.Handler):
 
 
     def POST(self, *args):
+        self.set_headers({'Content-Type': 'application/json; charset=UTF-8'})
         ret = self._post_handler()
         self.write(ret)
 
@@ -163,6 +164,7 @@ class ConsumerTimesHandler(core.Handler):
 
 
     def POST(self, *args):
+        self.set_headers({'Content-Type': 'application/json; charset=UTF-8'})
         ret = self._post_handler()
         self.write(ret)
 
@@ -217,6 +219,7 @@ class ConsumerTimesStat(core.Handler):
 
     def GET(self):
         try:
+            self.set_headers({'Content-Type': 'application/json; charset=UTF-8'})
             data = self._get_handler()
             return data
         except Exception as e:
@@ -288,6 +291,7 @@ class DeviceInfoHandler(core.Handler):
 
     def GET(self):
         try:
+            self.set_headers({'Content-Type': 'application/json; charset=UTF-8'})
             data = self._get_handler()
             log.debug('ret data=%s', data)
             return data
@@ -349,6 +353,7 @@ class MerchantDeviceInfoHandler(core.Handler):
 
     def GET(self):
         try:
+            self.set_headers({'Content-Type': 'application/json; charset=UTF-8'})
             data = self._get_handler()
             log.debug('ret data=%s', data)
             return data
@@ -392,6 +397,7 @@ class ConsumerListHandler(core.Handler):
 
     def GET(self):
         try:
+            self.set_headers({'Content-Type': 'application/json; charset=UTF-8'})
             data = self._get_handler()
             log.debug('ret data=%s', data)
             return data
