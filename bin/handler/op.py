@@ -53,7 +53,7 @@ class RegisterHandler(core.Handler):
             if flag:
                 return success({'userid': userid})
             else:
-                return error(UAURET.DATAEXIST)
+                return error(UAURET.PHONENUMEXIST)
         except Exception as e:
             log.warn(e)
             log.warn(traceback.format_exc())
