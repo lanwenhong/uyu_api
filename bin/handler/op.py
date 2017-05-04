@@ -101,7 +101,7 @@ class ConsumerTimesHandler(core.Handler):
         Field('store_userid', T_INT, False, match=r'^([0-9]{0,10})$'),
         Field('training_times', T_INT, False),
         Field('eyesight_id', T_INT, True, match=r'^([0-9]{0,10})$'),
-        Field('device_id', T_INT, True, match=r'^([0-9]{0,10})$'),
+        Field('device_id', T_INT, False, match=r'^([0-9]{0,10})$'),
     ]
 
     def _post_handler_errfunc(self, msg):
@@ -188,9 +188,10 @@ class ConsumerTimesStat(core.Handler):
             if not check:
                 return error(UAURET.ROLEERR)
             #获取次数
-            ret = self._query_handler(consumer_id)
+            ret, buy_ret = self._query_handler(consumer_id)
             remain_times = int(ret.get('remain_times')) if ret and ret['remain_times'] else 0
-            data = {'remain_times': remain_times}
+            buy_times = int(buy_ret.get('buy_times')) if buy_ret and buy_ret['buy_times'] else 0
+            data = {'remain_times': remain_times, 'buy_times': buy_times}
             return success(data)
         except Exception as e:
             log.warn(e)
@@ -207,7 +208,20 @@ class ConsumerTimesStat(core.Handler):
         ret = self.db.select_one(
             table='consumer', fields=keep_fields, where=where
         )
-        return ret
+
+        buy_keep_fields = [
+            'sum(training_times) as buy_times'
+        ]
+        buy_where = {
+            'busicd': define.BUSICD_CHAN_ALLOT_TO_COSUMER,
+            'consumer_id': consumer_id,
+            'status': define.UYU_ORDER_STATUS_SUCC
+        }
+        buy_ret = self.db.select_one(
+            table='training_operator_record', fields=buy_keep_fields, where=buy_where
+        )
+
+        return ret, buy_ret
 
     @with_database('uyu_core')
     def _check_consumer(self, consumer_id):
