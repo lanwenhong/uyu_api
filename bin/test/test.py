@@ -21,7 +21,7 @@ class TestUyuInternalApi(unittest.TestCase):
         self.client = HttpClient(self.server, client_class = RequestsClient)
 
 
-    # @unittest.skip("skipping")
+    @unittest.skip("skipping")
     def test_register(self):
         self.url = '/internal/v1/api/register'
         self.send = {
@@ -55,7 +55,7 @@ class TestUyuInternalApi(unittest.TestCase):
         self.assertEqual(respcd, '0000')
 
 
-    @unittest.skip("skipping")
+    # @unittest.skip("skipping")
     def test_consume_times_stat(self):
         self.url = '/internal/v1/api/consumer_times_stat'
         self.send  = {

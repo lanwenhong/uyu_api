@@ -188,10 +188,10 @@ class ConsumerTimesStat(core.Handler):
             if not check:
                 return error(UAURET.ROLEERR)
             #获取次数
-            ret, buy_ret = self._query_handler(consumer_id)
+            ret, buy_ret, store_ret = self._query_handler(consumer_id)
             remain_times = int(ret.get('remain_times')) if ret and ret['remain_times'] else 0
             buy_times = int(buy_ret.get('buy_times')) if buy_ret and buy_ret['buy_times'] else 0
-            data = {'remain_times': remain_times, 'buy_times': buy_times}
+            data = {'remain_times': remain_times, 'buy_times': buy_times, 'stores': store_ret}
             return success(data)
         except Exception as e:
             log.warn(e)
@@ -221,7 +221,21 @@ class ConsumerTimesStat(core.Handler):
             table='training_operator_record', fields=buy_keep_fields, where=buy_where
         )
 
-        return ret, buy_ret
+        store_ret = self.db.select(
+            table='consumer', fields=['remain_times', 'store_id'], where={'userid': consumer_id}
+        )
+
+        if store_ret:
+            for item in store_ret:
+                store_id = item['store_id']
+                if store_id == 0:
+                    item['store_name'] = '全平台'
+                else:
+                    result = self.db.select_one(table='stores', fields='store_name', where={'id': item['store_id']})
+                    item['store_name'] = result.get('store_name') if result else ''
+
+
+        return ret, buy_ret, store_ret
 
     @with_database('uyu_core')
     def _check_consumer(self, consumer_id):
