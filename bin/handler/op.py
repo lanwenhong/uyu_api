@@ -134,17 +134,28 @@ class ConsumerTimesHandler(core.Handler):
         else:
             return False, UAURET.USERERR, None
 
+    @with_database('uyu_core')
+    def check_store_device(self, store_id, device_id):
+        ret = self.db.select_one(table='device', fields='*', where={'id': device_id, 'store_id': store_id})
+        return ret
 
     @with_validator_self
     def _post_handler(self):
         try:
             params = self.validator.data
             userid = params.get('userid')
+            device_id = params.get('device_id')
             store_userid = params.pop('store_userid')
             check, code, store_id = self._trans_store_info(store_userid)
             if not check:
                 return error(code)
             params['store_id'] = store_id
+
+            # 添加设备是不是绑定门店且匹配
+            flag = self.check_store_device(store_id, device_id)
+            if not flag:
+                log.debug('store_id=%d and device_id=%d not bind', store_id, device_id)
+                return error(UAURET.STOREDEVICEERR)
 
             cc = ConsumerTimesChange()
             ret = cc.do_sub_times(params)
