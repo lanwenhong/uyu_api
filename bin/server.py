@@ -19,7 +19,7 @@ from zbase.web import template
 import config
 
 if config.LOGFILE:
-    log = logger.install(config.LOGFILE)
+    log = logger.install(config.LOGFILE, when='MIDNIGHT')
 else:
     log = logger.install('stdout')
 
