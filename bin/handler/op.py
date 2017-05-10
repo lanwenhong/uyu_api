@@ -159,8 +159,10 @@ class ConsumerTimesHandler(core.Handler):
 
             cc = ConsumerTimesChange()
             ret = cc.do_sub_times(params)
-            if ret == UYU_OP_ERR:
-                return error(UAURET.ORDERERR)
+            # if ret == UYU_OP_ERR:
+            #     return error(UAURET.ORDERERR)
+            if ret != UYU_OP_OK:
+                return error(ret)
             ret = self._get_remain_times(userid, store_id)
             return success(ret)
         except Exception as e:

@@ -48,8 +48,8 @@ class TestUyuInternalApi(unittest.TestCase):
             'userid': 1199,
             'store_userid': 1203,
             'training_times': 1,
-            # 'device_id': 114
-            'device_id': 136
+            'device_id': 114
+            # 'device_id': 136
         }
         ret = self.client.post(self.url, self.send)
         log.info(ret)
