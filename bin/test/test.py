@@ -21,19 +21,17 @@ class TestUyuInternalApi(unittest.TestCase):
         self.client = HttpClient(self.server, client_class = RequestsClient)
 
 
-    @unittest.skip("skipping")
+    #@unittest.skip("skipping")
     def test_register(self):
         self.url = '/internal/v1/api/register'
         self.send = {
-            #'mobile': '13928478197',
-            'mobile': '13928478201',
-            # 'password': '123456',
-            'password': 'be00aa3788dd44617b7402cb4750519ed535d5cd3e9d3d95ffb2987e18a67a5326c33ab3d459a28c86adfcc502635584fe7ae5d67b78d2c46a0a07f734c010c5',
+            'mobile': '13928478221',
+            'password': '123456',
             'user_type': 7,
-            'nick_name': 'ccd8201',
-            'username': 'ccd8201',
-            'email': '1392847201@cc.com',
-            #'store_userid': 51568
+            'nick_name': 'ccd8221',
+            'username': 'ccd8221',
+            'email': '13928478221@cc.com',
+            'store_userid': 51568
         }
         ret = self.client.post(self.url, self.send)
         log.info(ret)
@@ -41,7 +39,7 @@ class TestUyuInternalApi(unittest.TestCase):
         self.assertEqual(respcd, '0000')
 
 
-    # @unittest.skip("skipping")
+    @unittest.skip("skipping")
     def test_consume_change(self):
         self.url = '/internal/v1/api/consumer_change'
         self.send  = {
@@ -99,6 +97,21 @@ class TestUyuInternalApi(unittest.TestCase):
         self.url = '/v1/consumer/list'
         self.send  = {}
         ret = self.client.get(self.url, self.send)
+        log.info(ret)
+        respcd = json.loads(ret).get('respcd')
+        self.assertEqual(respcd, '0000')
+
+
+    @unittest.skip("skipping")
+    def test_update_user_info(self):
+        self.url = '/v1/user/update'
+        self.send  = {
+            'login_name': 'dc12345',
+            'phone_num': '13802438716',
+            'nick_name': 'dc_14567',
+            'userid': 1262
+        }
+        ret = self.client.post(self.url, self.send)
         log.info(ret)
         respcd = json.loads(ret).get('respcd')
         self.assertEqual(respcd, '0000')

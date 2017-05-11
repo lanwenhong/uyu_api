@@ -38,18 +38,21 @@ class RegisterHandler(core.Handler):
             uop = UUser()
             params = self.validator.data
             store_userid = params.pop('store_userid')
+            log.debug('RegisterHandler store_userid=%s', store_userid)
             user_type = params['user_type']
             if user_type == define.UYU_USER_ROLE_COMSUMER:
-                if store_userid != '':
+                if store_userid:
                     check, code, store_id = self._trans_store_info(store_userid)
+                    log.debug('check=%s, code=%s, store_id=%s', check, code, store_id)
                     if not check:
                         return error(code)
                 else:
                     store_id = 0
                 flag, userid = uop.internal_user_register_with_consumer(params, store_id)
+                log.debug('internal_user_register_with_consumer flag=%s, userid=%s', flag, userid)
             else:
                 flag, userid = uop.internal_user_register(params)
-
+                log.debug('internal_user_register flag=%s, userid=%s', flag, userid)
             if flag:
                 return success({'userid': userid})
             else:
@@ -446,3 +449,53 @@ class ConsumerListHandler(core.Handler):
             log.warn(e)
             log.warn(traceback.format_exc())
             return error(UAURET.SERVERERR)
+
+
+class ModifyUserInfoHandler(core.Handler):
+    _post_handler_fields = [
+        Field('userid', T_INT, False, match=r'^([0-9]{0,10})$'),
+        Field('phone_num', T_REG, False, match=r'^([0-9]{11})$'),
+        Field('login_name', T_STR, False),
+        Field('nick_name', T_STR, False),
+        Field('username', T_STR, True),
+
+    ]
+
+    def _post_handler_errfunc(self, msg):
+        return error(UAURET.PARAMERR, respmsg=msg)
+
+    @with_validator_self
+    def _post_handler(self):
+        try:
+            params = self.validator.data
+            userid = params.pop('userid')
+            if not params.get('username'):
+                params.pop('username')
+
+            ret = self._update_user(userid, params)
+            if ret != UYU_OP_OK:
+                return error(ret)
+
+            return success({})
+        except Exception as e:
+            log.warn(e)
+            log.warn(traceback.format_exc())
+            if e[0] == 1062:
+                return error(UAURET.MODIFYUSERINFOERR)
+            return error(UAURET.REQERR)
+
+    @with_database('uyu_core')
+    def _update_user(self, userid, data):
+        now = datetime.datetime.now()
+        data.update({'utime': now})
+        ret = self.db.update(table='auth_user', values=data, where={'id': userid})
+        log.debug('update user info userid=%d, data=%s, ret=%d', userid, data, ret)
+        if ret == 0:
+            return UAURET.MODIFYUSERINFOERR
+        return UYU_OP_OK
+
+
+    def POST(self, *args):
+        self.set_headers({'Content-Type': 'application/json; charset=UTF-8'})
+        ret = self._post_handler()
+        self.write(ret)

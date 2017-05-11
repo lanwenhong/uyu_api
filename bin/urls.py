@@ -15,4 +15,7 @@ urls = (
     ('^/v1/merchant/device_info$', op.MerchantDeviceInfoHandler),
     # 消费者数据
     ('^/v1/consumer/list$', op.ConsumerListHandler),
+    # 更新用户数据
+    ('^/v1/user/update$', op.ModifyUserInfoHandler),
+
 )
