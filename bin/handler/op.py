@@ -455,8 +455,8 @@ class ModifyUserInfoHandler(core.Handler):
     _post_handler_fields = [
         Field('userid', T_INT, False, match=r'^([0-9]{0,10})$'),
         Field('phone_num', T_REG, False, match=r'^([0-9]{11})$'),
-        Field('login_name', T_STR, False),
-        Field('nick_name', T_STR, False),
+        Field('login_name', T_STR, True),
+        Field('nick_name', T_STR, True),
         Field('username', T_STR, True),
 
     ]
@@ -471,6 +471,10 @@ class ModifyUserInfoHandler(core.Handler):
             userid = params.pop('userid')
             if not params.get('username'):
                 params.pop('username')
+            if not params.get("login_name"):
+                params.pop("login_name")
+            if not params.get("nick_name"):
+                params.pop("nick_name")
 
             ret = self._update_user(userid, params)
             if ret != UYU_OP_OK:
