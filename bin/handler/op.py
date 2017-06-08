@@ -37,6 +37,9 @@ class RegisterHandler(core.Handler):
         try:
             uop = UUser()
             params = self.validator.data
+            flag = self.check_name_len(params)
+            if not flag:
+                return error(UAURET.PARAMERR, respmsg=u'长度在6-16位')
             store_userid = params.pop('store_userid')
             log.debug('RegisterHandler store_userid=%s', store_userid)
             user_type = params['user_type']
@@ -61,6 +64,20 @@ class RegisterHandler(core.Handler):
             log.warn(e)
             log.warn(traceback.format_exc())
             return error(UAURET.REQERR)
+
+
+    def check_name_len(self, params):
+        flag = True
+        key_check = ['username']
+        for key in key_check:
+            if params.has_key(key) and params[key]:
+                length = len(params[key])
+                if length < 6 or length > 16:
+                    log.warn('key=%s|value=%s|length=%s not in range(6, 16)', key, params[key], length)
+                    flag = False
+                    break
+        return flag
+
 
     @with_database('uyu_core')
     def _trans_store_info(self, store_userid):

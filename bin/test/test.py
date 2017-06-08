@@ -25,12 +25,12 @@ class TestUyuInternalApi(unittest.TestCase):
     def test_register(self):
         self.url = '/internal/v1/api/register'
         self.send = {
-            'mobile': '13928478221',
+            'mobile': '13928478231',
             'password': '123456',
             'user_type': 7,
-            'nick_name': 'ccd8221',
-            'username': 'ccd8221',
-            'email': '13928478221@cc.com',
+            'nick_name': '张三',
+            'username': '1234567890111111',
+            'email': '13928478231@cc.com',
             'store_userid': 51568
         }
         ret = self.client.post(self.url, self.send)
