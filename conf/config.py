@@ -58,3 +58,5 @@ template = os.path.join(HOME, 'template')
 HOST = '0.0.0.0'
 # 服务端口
 PORT = 8087
+# REDIS
+redis_url = 'redis://127.0.0.1:4600/0'

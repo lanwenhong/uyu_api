@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import redis
 import logging
 import datetime
 import traceback
@@ -12,7 +13,9 @@ from uyubase.base.uyu_user import UUser
 from uyubase.uyu import define
 from uyubase.uyu.define import UYU_OP_OK, UYU_OP_ERR
 from uyubase.base.training_op import ConsumerTimesChange
+from config import redis_url
 log = logging.getLogger()
+
 
 
 class RegisterHandler(core.Handler):
@@ -122,6 +125,7 @@ class ConsumerTimesHandler(core.Handler):
         Field('training_times', T_INT, False),
         Field('eyesight_id', T_INT, True, match=r'^([0-9]{0,10})$'),
         Field('device_id', T_INT, False, match=r'^([0-9]{0,10})$'),
+        Field('train_id', T_INT, True, match=r'^([0-9]{0,10})$'),
     ]
 
     def _post_handler_errfunc(self, msg):
@@ -178,12 +182,13 @@ class ConsumerTimesHandler(core.Handler):
                 return error(UAURET.STOREDEVICEERR)
 
             cc = ConsumerTimesChange()
-            ret = cc.do_sub_times(params)
+            ret, record_id = cc.do_sub_times(params)
             # if ret == UYU_OP_ERR:
             #     return error(UAURET.ORDERERR)
             if ret != UYU_OP_OK:
                 return error(ret)
             ret = self._get_remain_times(userid, store_id)
+            ret['record_id'] = record_id
             return success(ret)
         except Exception as e:
             log.warn(e)
@@ -515,6 +520,39 @@ class ModifyUserInfoHandler(core.Handler):
             return UAURET.MODIFYUSERINFOERR
         return UYU_OP_OK
 
+
+    def POST(self, *args):
+        self.set_headers({'Content-Type': 'application/json; charset=UTF-8'})
+        ret = self._post_handler()
+        self.write(ret)
+
+
+class TokenVerifyHandler(core.Handler):
+
+    _post_handler_fields = [
+        Field('token', T_STR, False),
+    ]
+
+    def _post_handler_errfunc(self, msg):
+        return error(UAURET.PARAMERR, respmsg=msg)
+
+    @with_validator_self
+    def _post_handler(self):
+        try:
+            params = self.validator.data
+            token = params.get('token')
+            self.redis_pool = redis.ConnectionPool.from_url(redis_url)
+            self.client = redis.StrictRedis(connection_pool=self.redis_pool)
+            value = self.client.get(token)
+            self.redis_pool.disconnect()
+            log.debug('token=%s|value=%s', token, value)
+            if not value:
+                return error(UAURET.DATAERR)
+            return success({})
+        except Exception as e:
+            log.warn(e)
+            log.warn(traceback.format_exc())
+            return error(UAURET.REQERR)
 
     def POST(self, *args):
         self.set_headers({'Content-Type': 'application/json; charset=UTF-8'})

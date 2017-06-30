@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 import os
 import sys
-import urls
 import logging
 HOME = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.join(os.path.dirname(HOME), 'conf'))
 
+import urls
 from zbase.base import logger
 from zbase.base import dbpool
 from zbase.base import loader

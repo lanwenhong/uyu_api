@@ -21,7 +21,7 @@ class TestUyuInternalApi(unittest.TestCase):
         self.client = HttpClient(self.server, client_class = RequestsClient)
 
 
-    #@unittest.skip("skipping")
+    @unittest.skip("skipping")
     def test_register(self):
         self.url = '/internal/v1/api/register'
         self.send = {
@@ -110,6 +110,18 @@ class TestUyuInternalApi(unittest.TestCase):
             'phone_num': '13802438716',
             'nick_name': 'dc_14567',
             'userid': 1262
+        }
+        ret = self.client.post(self.url, self.send)
+        log.info(ret)
+        respcd = json.loads(ret).get('respcd')
+        self.assertEqual(respcd, '0000')
+
+    # @unittest.skip("skipping")
+    def test_token_verify(self):
+        self.url = '/v1/token/verify'
+        self.send = {
+            # 'token': 'd5872ece-433f-451c-b4cf-fca97f759489'
+            'token': 'd5872ece'
         }
         ret = self.client.post(self.url, self.send)
         log.info(ret)

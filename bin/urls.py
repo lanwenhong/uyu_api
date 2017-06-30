@@ -17,5 +17,7 @@ urls = (
     ('^/v1/consumer/list$', op.ConsumerListHandler),
     # 更新用户数据
     ('^/v1/user/update$', op.ModifyUserInfoHandler),
+    # 校验Token
+    ('^/v1/token/verify$', op.TokenVerifyHandler),
 
 )
