@@ -39,12 +39,12 @@ class TestUyuInternalApi(unittest.TestCase):
         self.assertEqual(respcd, '0000')
 
 
-    @unittest.skip("skipping")
+    # @unittest.skip("skipping")
     def test_consume_change(self):
         self.url = '/internal/v1/api/consumer_change'
         self.send  = {
             'userid': 1199,
-            'store_userid': 1203,
+            'store_userid': 1197,
             'training_times': 1,
             'device_id': 114
             # 'device_id': 136
@@ -116,7 +116,7 @@ class TestUyuInternalApi(unittest.TestCase):
         respcd = json.loads(ret).get('respcd')
         self.assertEqual(respcd, '0000')
 
-    # @unittest.skip("skipping")
+    @unittest.skip("skipping")
     def test_token_verify(self):
         self.url = '/v1/token/verify'
         self.send = {

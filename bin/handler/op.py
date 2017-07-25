@@ -188,7 +188,22 @@ class ConsumerTimesHandler(core.Handler):
             if ret != UYU_OP_OK:
                 return error(ret)
             ret = self._get_remain_times(userid, store_id)
-            ret['record_id'] = record_id
+
+            # if not ret:
+            #     result = {'record_id': record_id, 'remain_times': 0}
+            # else:
+            #     ret['record_id'] = record_id
+            #     result = ret
+            # return success(result)
+            if not ret:
+                ret = {'record_id': record_id, 'remain_times': 0}
+            else:
+                remain_times = ret.get('remain_times')
+                if not remain_times:
+                    ret['remain_times'] = 0
+                else:
+                    ret['remain_times'] = int(remain_times)
+                ret['record_id'] = record_id
             return success(ret)
         except Exception as e:
             log.warn(e)
@@ -197,7 +212,9 @@ class ConsumerTimesHandler(core.Handler):
 
     @with_database('uyu_core')
     def _get_remain_times(self, userid, store_id):
-        ret = self.db.select_one(table='consumer', fields='remain_times', where={'userid': userid, 'store_id': store_id})
+        # ret = self.db.select_one(table='consumer', fields='remain_times', where={'userid': userid, 'store_id': store_id})
+        ret = self.db.select_one(table='consumer', fields='sum(remain_times) as remain_times', where={'userid': userid, 'store_id': ('in', [store_id, 0])})
+        log.debug('func=%s|ret=%s', '_get_remain_times', ret)
         return ret
 
 
